@@ -1,0 +1,10 @@
+{
+	"apps": [
+		{
+			"name": "PicoUi Example",
+			"path": "/Users/sruml/Development/MIUI/src/github.com/hypebeast/example/example"
+		}
+	],
+	"appFolder": "/Users/sruml/Development/MIUI/work/apps",
+	"port": 9900
+}

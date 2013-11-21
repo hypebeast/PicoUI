@@ -1,0 +1,10 @@
+{
+	"apps": [
+		{
+			"name": "Example App",
+			"path": "/home/picoui/exampleapp"
+		}
+	],
+	"appFolder": "/home/pi/picoui/apps",
+	"port": 9900
+}
