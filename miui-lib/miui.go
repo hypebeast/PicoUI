@@ -80,6 +80,20 @@ type MiUiListItem struct {
 	toggleId        string
 }
 
+// Represents an input UI element.
+type MiUiInput struct {
+	// TODO
+	ui *MiUi
+	id string
+}
+
+// Represents an image UI element.
+type MiUiImage struct {
+	// TODO
+	ui *MiUi
+	id string
+}
+
 // Function type for handling a click event.
 type clickHandler func()
 
