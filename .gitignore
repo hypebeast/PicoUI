@@ -1,2 +1,5 @@
 *.cache
 .DS_Store
+picoui-chief/picoui-chief
+example/example
+*.sublime-*
