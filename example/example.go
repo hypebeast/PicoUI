@@ -49,7 +49,9 @@ func inputPage() {
 	page := ui.NewUiPage("Inputs", "Back", mainMenu)
 	input1 := page.AddInput("text", "Input 1")
 	input2 := page.AddInput("text", "Input 2")
+	page.AddElement("hr")
 	text := page.AddTextbox("Here goes the text from Input 1 + Input 2", "h3")
+	page.AddElement("hr")
 
 	buttonCallback := func() {
 		text.SetText(input1.GetText() + input2.GetText())
@@ -58,12 +60,12 @@ func inputPage() {
 	page.AddButton("Get Text", buttonCallback)
 }
 
-func imagesPage() {
-	page := ui.NewUiPage("Images", "Back", mainMenu)
-	page.AddImage("nature3.png")
-	page.AddElement("p")
-	page.AddImage("Beauty-of-nature.jpg")
-}
+// func imagesPage() {
+// 	page := ui.NewUiPage("Images", "Back", mainMenu)
+// 	page.AddImage("nature3.png")
+// 	page.AddElement("p")
+// 	page.AddImage("Beauty-of-nature.jpg")
+// }
 
 func onUp() {
 	title.SetText("Up!")
@@ -92,7 +94,7 @@ func mainMenu() {
 	list.AddItem("Buttons", true, false, buttonsPage, nil)
 	list.AddItem("Toggles", true, false, togglesPage, nil)
 	list.AddItem("Inputs", true, false, inputPage, nil)
-	list.AddItem("Images", true, false, imagesPage, nil)
+	//list.AddItem("Images", true, false, imagesPage, nil)
 }
 
 func main() {

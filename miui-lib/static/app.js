@@ -85,6 +85,10 @@ function poll() {
 						$.get('/click?eid=' + $(this).attr('id'), {}, function (r) {});
 					});
 				}
+			} else if (msg.cmd === 'addinput') {
+				$('<input id="' + msg.attributes.eid + '" type="' + msg.attributes.type + '" placeholder="' + msg.attributes.placeholder + '">').insertBefore(BEFORE);
+			} else if (msg.cmd === 'getinput') {
+				$.get('/state?msg=' + $('#' + msg.attributes.eid).val(), {}, function (r) {});
 			}
 		}
 		setTimeout(function () {poll();}, 0);

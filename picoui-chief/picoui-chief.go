@@ -105,13 +105,21 @@ func startAppHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app_running = false
+	app_running = true
 
 	fmt.Fprintf(w, "%s:%s", "ok starting app: ", foundApp.Name)
 }
 
 func killAppHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	if app_running {
+		running_app.Process.Kill()
+		app_running = false
+
+		fmt.Fprintf(w, "%s", "ok killing app")
+		return
+	}
+
+	fmt.Fprintf(w, "error: no running app found")
 }
 
 func listAppsHandler(w http.ResponseWriter, r *http.Request) {
@@ -151,6 +159,10 @@ func meminfoHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", readProc("mem"))
 }
 
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "%s", "pong")
+}
+
 func main() {
 	configFile := flag.String("config", "/etc/picoui-chief.json", "Config file")
 	version := flag.Bool("version", false, "Output version and exit")
@@ -180,6 +192,7 @@ func main() {
 	http.HandleFunc("/system/lsusb", lsusbHandler)
 	http.HandleFunc("/system/version", versionHandler)
 	http.HandleFunc("/system/mem", meminfoHandler)
+	http.HandleFunc("/ping", pingHandler)
 
 	// Start server and listen for incoming requests
 	http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil)

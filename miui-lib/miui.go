@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	SERVER_PORT         = 9999
-	SERVER_HOST         = "0.0.0.0"
-	MAX_MESSAGES_BUFFER = 50
+	SERVER_PORT  = 9999
+	SERVER_HOST  = "0.0.0.0"
+	MAX_MESSAGES = 250
 )
 
 // Represents a MiUi application.
@@ -20,7 +20,8 @@ type MiUi struct {
 	handlers *Handlers
 }
 
-// Represents the handlers for MiUi.
+// Represents the handlers for MiUi. A Handlers is responsible for the
+// communication with a client application.
 type Handlers struct {
 	messages                []Message
 	messagesSinceLastReload []Message
@@ -28,6 +29,7 @@ type Handlers struct {
 	currentPageTitle        string
 	currentPageObj          *MiUiPage
 	timeout                 int
+	inBuffer                []string
 }
 
 // Represents a JSON message that is used to communicate with the client application.
@@ -36,7 +38,7 @@ type Message struct {
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
-// Represents an UI page.
+// Represents an user interface page.
 type MiUiPage struct {
 	ui          *MiUi
 	id          string
@@ -82,14 +84,12 @@ type MiUiListItem struct {
 
 // Represents an input UI element.
 type MiUiInput struct {
-	// TODO
 	ui *MiUi
 	id string
 }
 
 // Represents an image UI element.
 type MiUiImage struct {
-	// TODO
 	ui *MiUi
 	id string
 }
@@ -137,6 +137,7 @@ func NewHandlers(timeout int) *Handlers {
 	http.HandleFunc("/poll", handlers.pollHandler)
 	http.HandleFunc("/click", handlers.clickHandler)
 	http.HandleFunc("/toggle", handlers.toggleHandler)
+	http.HandleFunc("/state", handlers.stateHandler)
 
 	return handlers
 }
@@ -167,7 +168,7 @@ func (hd *Handlers) initHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Implements the poll handler. It returns messages until a timeout occurs or
-// no all messages are returned.
+// all messages are returned.
 func (hd *Handlers) pollHandler(w http.ResponseWriter, r *http.Request) {
 	var waiting int = 0
 	enc := json.NewEncoder(w)
@@ -185,7 +186,7 @@ func (hd *Handlers) pollHandler(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
-		// Sleep for some time if no new message is available.
+		// Sleep for some time
 		time.Sleep(10 * time.Millisecond)
 		waiting += 10
 	}
@@ -195,6 +196,12 @@ func (hd *Handlers) pollHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("encoding error", err)
 	}
+}
+
+func (hd *Handlers) stateHandler(w http.ResponseWriter, r *http.Request) {
+	vals := r.URL.Query()
+	text := vals["msg"][0]
+	hd.inBuffer = append(hd.inBuffer, text)
 }
 
 func (hd *Handlers) clickHandler(w http.ResponseWriter, r *http.Request) {
@@ -244,19 +251,55 @@ func (hd *Handlers) enqueue(msg Message) {
 		}
 	}
 
-	if len(hd.messages) > MAX_MESSAGES_BUFFER {
+	if len(hd.messages) > MAX_MESSAGES {
 		hd.messages = hd.messages[:len(hd.messages)-1]
 	}
 }
 
+func (hd *Handlers) enqueue_and_wait_for_result(msg Message) string {
+	// enqueue the message
+	hd.messages = append(hd.messages, msg)
+
+	if len(hd.messages) > MAX_MESSAGES {
+		hd.messages = hd.messages[:len(hd.messages)-1]
+	}
+
+	// Wait until all messages are received by the app and the message queue is empty
+	done := false
+	for !done {
+		// Sleep for some time
+		time.Sleep(10 * time.Millisecond)
+
+		if len(hd.messages) == 0 {
+			done = true
+		}
+	}
+
+	// Wait for the response
+	received := false
+	var result string
+	for !received {
+		// Sleep for some time
+		time.Sleep(10 * time.Millisecond)
+
+		if len(hd.inBuffer) > 0 {
+			received = true
+		}
+
+		if received {
+			// Get the last message
+			result = hd.inBuffer[len(hd.inBuffer)-1]
+			hd.inBuffer = hd.inBuffer[:len(hd.inBuffer)-1]
+		}
+	}
+
+	return result
+}
+
 // flushQueue removes all items from the message queues.
 func (hd *Handlers) flushQueue() {
-	// var t []Message
-	// var r []Message
 	hd.messages = nil
-	// hd.messages = t
 	hd.messagesSinceLastReload = nil
-	// hd.messagesSinceLastReload = r
 }
 
 /////
@@ -279,7 +322,7 @@ func newMiUiPage(ui *MiUi, title string, prevText string, onPrevClick clickHandl
 	return page
 }
 
-// postPush enqueues a new 'pagepost' message. This message must be send if a
+// pagePost enqueues a new 'pagepost' message. This message must be send when a
 // new page was created.
 func (p *MiUiPage) pagePost() {
 	msg := Message{Cmd: "pagepost"}
@@ -328,8 +371,10 @@ func (p *MiUiPage) AddElement(element string) *MiUiTextBox {
 	return ele
 }
 
-func (p *MiUiPage) AddInput() {
-	// TODO
+func (p *MiUiPage) AddInput(inputType string, placeholder string) *MiUiInput {
+	input := NewMiUiInput(p.ui, inputType, placeholder)
+	p.elements = append(p.elements, input)
+	return input
 }
 
 func (p *MiUiPage) AddImage() {
@@ -476,4 +521,45 @@ func (b *MiUiTextBox) SetText(text string) {
 	attributes["txt"] = text
 	msg.Attributes = attributes
 	b.ui.handlers.enqueue(msg)
+}
+
+/////
+// MiUiInput
+/////
+
+// NewMiUiInput creates and returns a new MiUiInput.
+func NewMiUiInput(ui *MiUi, inputType string, placeholder string) *MiUiInput {
+	id := "input_" + createId()
+	input := MiUiInput{ui: ui, id: id}
+
+	msg := Message{Cmd: "addinput"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = id
+	attributes["type"] = inputType
+	attributes["placeholder"] = placeholder
+	msg.Attributes = attributes
+	ui.handlers.enqueue(msg)
+
+	return &input
+}
+
+func (i *MiUiInput) GetText() string {
+	msg := Message{Cmd: "getinput"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = i.id
+	msg.Attributes = attributes
+	return i.ui.handlers.enqueue_and_wait_for_result(msg)
+}
+
+/////
+// MiUiImage
+/////
+
+/////
+// Helper functions
+/////
+
+func createId() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return strconv.FormatInt(r.Int63(), 10)
 }
