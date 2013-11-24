@@ -555,6 +555,10 @@ func (i *MiUiInput) GetText() string {
 // MiUiImage
 /////
 
+func NewMiUiImage(ui *MiUi, source string) *MiUiImage {
+
+}
+
 /////
 // Helper functions
 /////
