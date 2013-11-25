@@ -32,7 +32,7 @@ func NewList(ui *PicoUi, page *Page) *List {
 
 // AddItem adds a ListItem to the list.
 func (l *List) AddItem(text string, chevron bool, toggle bool, onClick clickHandler, onToggle toggleHandler) *ListItem {
-	item := NewListItem(l.ui, l.id, text, chevron, toggle, onClick, onToggle)
+	item := newListItem(l.ui, l.id, text, chevron, toggle, onClick, onToggle)
 	l.page.elements = append(l.page.elements, item)
 	if onClick != nil {
 		l.page.clickables[item.id] = onClick
@@ -44,8 +44,42 @@ func (l *List) AddItem(text string, chevron bool, toggle bool, onClick clickHand
 	return item
 }
 
+func (l *List) AddToggle(text string, onToggle toggleHandler) *ListItem {
+	id := "toggleitem_" + createId()
+	tg_id := "tg_" + createId()
+	item := ListItem{
+		ui:              l.ui,
+		id:              id,
+		parentId:        l.id,
+		toggleId:        tg_id,
+		onToggleHandler: onToggle}
+
+	if onToggle != nil {
+		l.page.toggables[tg_id] = onToggle
+	}
+
+	msg := Message{Cmd: "addtoggleitem"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = id
+	attributes["pid"] = l.id
+	attributes["txt"] = text
+	attributes["tid"] = tg_id
+	msg.Attributes = attributes
+	l.ui.handlers.enqueue(msg)
+
+	return &item
+}
+
+func (l *List) AddCheckbox(text string, onToggle toggleHandler) {
+
+}
+
+func (l *List) AddSlider() {
+
+}
+
 // NewListItem creates a new ListItem element.
-func NewListItem(ui *PicoUi, parentId string, text string, chevron bool, toggle bool, onClick clickHandler, onToggle toggleHandler) *ListItem {
+func newListItem(ui *PicoUi, parentId string, text string, chevron bool, toggle bool, onClick clickHandler, onToggle toggleHandler) *ListItem {
 	id := "listitem_" + createId()
 	tg_id := "tg_" + createId()
 	item := ListItem{
@@ -68,4 +102,8 @@ func NewListItem(ui *PicoUi, parentId string, text string, chevron bool, toggle 
 	ui.handlers.enqueue(msg)
 
 	return &item
+}
+
+func (l *ListItem) SetText(text string) {
+	// TODO
 }

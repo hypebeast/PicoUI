@@ -64,9 +64,9 @@ func (p *Page) AddTextbox(text string, element string) *TextBox {
 	return box
 }
 
-// AddButton adds a new Button to the page.
-func (p *Page) AddButton(text string, onClick clickHandler) *Button {
-	button := NewButton(text, p.ui, onClick)
+// AddButton creates and returns a new Button element.
+func (p *Page) AddButton(text string, classAttributes []string, icon string, onClick clickHandler) *Button {
+	button := newButton(p.ui, text, classAttributes, icon, onClick)
 	p.elements = append(p.elements, button)
 	p.clickables[button.id] = onClick
 	return button
@@ -97,13 +97,17 @@ func (p *Page) AddList() *List {
 // HandleClick handles a click event.
 func (p *Page) handleClick(id string) {
 	if handler, ok := p.clickables[id]; ok {
-		handler()
+		if handler != nil {
+			handler()
+		}
 	}
 }
 
 // HandleToogle handles a toggle event.
 func (p *Page) handleToogle(id string, v bool) {
 	if handler, ok := p.toggables[id]; ok {
-		handler(v)
+		if handler != nil {
+			handler(v)
+		}
 	}
 }

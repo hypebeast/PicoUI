@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/hypebeast/miui/miui-lib"
+	"github.com/hypebeast/picoui/picoui-lib"
 	"time"
 )
 
 var (
-	ui    *miui.MiUi
-	title *miui.MiUiTextBox
+	ui    *picoui.PicoUi
+	title *picoui.TextBox
 )
 
 func staticPage() {
-	page := ui.NewUiPage("Static Content", "Back", mainMenu)
+	page := ui.NewPage("Static Content", "Back", mainMenu)
 	page.AddTextbox("Header 1 Text", "h1")
 	page.AddTextbox("Header 2 Text", "h2")
 	page.AddTextbox("Header 3 Text", "h3")
@@ -29,24 +29,60 @@ func staticPage() {
 }
 
 func buttonsPage() {
-	page := ui.NewUiPage("Buttons", "Back", mainMenu)
+	page := ui.NewPage("Buttons", "Back", mainMenu)
 	title = page.AddTextbox("Buttons!", "h1")
 	page.AddElement("hr")
-	page.AddButton("Up Button &uarr;", onUp)
-	page.AddButton("Down Button &darr;", onDown)
+	page.AddTextbox("Buttons with click handlers", "h2")
+	page.AddButton("Up Button &uarr;", nil, "", onUp)
+	page.AddElement("p")
+	page.AddButton("Down Button &darr;", nil, "", onDown)
+	page.AddElement("hr")
+
+	page.AddTextbox("Different Colors", "h2")
+	page.AddButton("Default", nil, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-light", []string{"button-light"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-stable", []string{"button-stable"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-positive", []string{"button-positive"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-balanced", []string{"button-balanced"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-energized", []string{"button-energized"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-assertive", []string{"button-assertive"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-royal", []string{"button-royal"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-dark", []string{"button-dark"}, "", nil)
+	page.AddElement("hr")
+
+	page.AddTextbox("Block Buttons", "h2")
+	page.AddButton("button-light", []string{"button-block", "button-light"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-energized", []string{"button-block", "button-energized"}, "", nil)
+	page.AddElement("p")
+	page.AddButton("button-assertive", []string{"button-block", "button-assertive"}, "", nil)
+	page.AddElement("p")
+
+	page.AddTextbox("Buttons with Icons", "h2")
+	page.AddButton("button-light", []string{"button-positive"}, "ion-navicon", nil)
+	page.AddElement("p")
+	page.AddButton("button-light", []string{"button-royal"}, "ion-email", nil)
 }
 
 func togglesPage() {
-	page := ui.NewUiPage("Toggles", "Back", mainMenu)
+	page := ui.NewPage("Toggles", "Back", mainMenu)
 	title = page.AddTextbox("Home Automation Appliance", "h1")
 	list := page.AddList()
-	list.AddItem("Lights", false, true, nil, lightsHandler)
-	list.AddItem("TV", false, true, nil, tvHandler)
-	list.AddItem("Refrigerator", false, true, nil, refrigeratorHandler)
+	list.AddToggle("Lights", lightsHandler)
+	list.AddToggle("TV", tvHandler)
+	list.AddToggle("Refrigerator", refrigeratorHandler)
 }
 
 func inputPage() {
-	page := ui.NewUiPage("Inputs", "Back", mainMenu)
+	page := ui.NewPage("Inputs", "Back", mainMenu)
 	input1 := page.AddInput("text", "Input 1")
 	input2 := page.AddInput("text", "Input 2")
 	page.AddElement("hr")
@@ -57,11 +93,11 @@ func inputPage() {
 		text.SetText(input1.GetText() + input2.GetText())
 	}
 
-	page.AddButton("Get Text", buttonCallback)
+	page.AddButton("Get Text", nil, "", buttonCallback)
 }
 
 // func imagesPage() {
-// 	page := ui.NewUiPage("Images", "Back", mainMenu)
+// 	page := ui.NewPage("Images", "Back", mainMenu)
 // 	page.AddImage("nature3.png")
 // 	page.AddElement("p")
 // 	page.AddImage("Beauty-of-nature.jpg")
@@ -88,17 +124,18 @@ func refrigeratorHandler(v bool) {
 }
 
 func mainMenu() {
-	page := ui.NewUiPage("PicoUi", "", nil)
+	page := ui.NewPage("PicoUi", "", nil)
+	// list := page.AddList()
 	list := page.AddList()
-	list.AddItem("Static Content", true, false, staticPage, nil)
-	list.AddItem("Buttons", true, false, buttonsPage, nil)
-	list.AddItem("Toggles", true, false, togglesPage, nil)
-	list.AddItem("Inputs", true, false, inputPage, nil)
-	//list.AddItem("Images", true, false, imagesPage, nil)
+	list.AddItem("Static Content", false, false, staticPage, nil)
+	list.AddItem("Buttons", false, false, buttonsPage, nil)
+	list.AddItem("Toggles", false, false, togglesPage, nil)
+	list.AddItem("Inputs", false, false, inputPage, nil)
+	// list.AddItem("Images", false, false, imagesPage, nil)
 }
 
 func main() {
-	ui = miui.NewMiUi(1000)
+	ui = picoui.NewPicoUi(1000)
 	mainMenu()
 	ui.Run()
 }
