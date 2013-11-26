@@ -81,6 +81,15 @@ func togglesPage() {
 	list.AddToggle("Refrigerator", refrigeratorHandler)
 }
 
+func checkboxesPage() {
+	page := ui.NewPage("Checkboxes", "Back", mainMenu)
+	title = page.AddTextbox("Home Automation Appliance", "h1")
+	list := page.AddList()
+	list.AddCheckbox("Lights", lightsHandler)
+	list.AddCheckbox("TV", tvHandler)
+	list.AddCheckbox("Refrigerator", refrigeratorHandler)
+}
+
 func inputPage() {
 	page := ui.NewPage("Inputs", "Back", mainMenu)
 	input1 := page.AddInput("text", "Input 1")
@@ -125,12 +134,12 @@ func refrigeratorHandler(v bool) {
 
 func mainMenu() {
 	page := ui.NewPage("PicoUi", "", nil)
-	// list := page.AddList()
 	list := page.AddList()
-	list.AddItem("Static Content", false, false, staticPage, nil)
-	list.AddItem("Buttons", false, false, buttonsPage, nil)
-	list.AddItem("Toggles", false, false, togglesPage, nil)
-	list.AddItem("Inputs", false, false, inputPage, nil)
+	list.AddItem("Static Content", false, staticPage)
+	list.AddItem("Buttons", false, buttonsPage)
+	list.AddItem("Toggles", false, togglesPage)
+	list.AddItem("Checkboxes", false, checkboxesPage)
+	list.AddItem("Inputs", false, inputPage)
 	// list.AddItem("Images", false, false, imagesPage, nil)
 }
 

@@ -31,14 +31,11 @@ func NewList(ui *PicoUi, page *Page) *List {
 }
 
 // AddItem adds a ListItem to the list.
-func (l *List) AddItem(text string, chevron bool, toggle bool, onClick clickHandler, onToggle toggleHandler) *ListItem {
-	item := newListItem(l.ui, l.id, text, chevron, toggle, onClick, onToggle)
+func (l *List) AddItem(text string, chevron bool, onClick clickHandler) *ListItem {
+	item := newListItem(l.ui, l.id, text, chevron, onClick)
 	l.page.elements = append(l.page.elements, item)
 	if onClick != nil {
 		l.page.clickables[item.id] = onClick
-	}
-	if onToggle != nil {
-		l.page.toggables[item.toggleId] = onToggle
 	}
 
 	return item
@@ -70,8 +67,30 @@ func (l *List) AddToggle(text string, onToggle toggleHandler) *ListItem {
 	return &item
 }
 
-func (l *List) AddCheckbox(text string, onToggle toggleHandler) {
+func (l *List) AddCheckbox(text string, onToggle toggleHandler) *ListItem {
+	id := "toggleitem_" + createId()
+	tg_id := "tg_" + createId()
+	item := ListItem{
+		ui:              l.ui,
+		id:              id,
+		parentId:        l.id,
+		toggleId:        tg_id,
+		onToggleHandler: onToggle}
 
+	if onToggle != nil {
+		l.page.toggables[tg_id] = onToggle
+	}
+
+	msg := Message{Cmd: "addcheckboxitem"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = id
+	attributes["pid"] = l.id
+	attributes["txt"] = text
+	attributes["tid"] = tg_id
+	msg.Attributes = attributes
+	l.ui.handlers.enqueue(msg)
+
+	return &item
 }
 
 func (l *List) AddSlider() {
@@ -79,16 +98,13 @@ func (l *List) AddSlider() {
 }
 
 // NewListItem creates a new ListItem element.
-func newListItem(ui *PicoUi, parentId string, text string, chevron bool, toggle bool, onClick clickHandler, onToggle toggleHandler) *ListItem {
+func newListItem(ui *PicoUi, parentId string, text string, chevron bool, onClick clickHandler) *ListItem {
 	id := "listitem_" + createId()
-	tg_id := "tg_" + createId()
 	item := ListItem{
-		ui:              ui,
-		id:              id,
-		parentId:        parentId,
-		onClickHandler:  onClick,
-		onToggleHandler: onToggle,
-		toggleId:        tg_id}
+		ui:             ui,
+		id:             id,
+		parentId:       parentId,
+		onClickHandler: onClick}
 
 	msg := Message{Cmd: "addlistitem"}
 	attributes := make(map[string]interface{})
@@ -96,8 +112,6 @@ func newListItem(ui *PicoUi, parentId string, text string, chevron bool, toggle 
 	attributes["pid"] = parentId
 	attributes["txt"] = text
 	attributes["chevron"] = chevron
-	attributes["toggle"] = toggle
-	attributes["tid"] = tg_id
 	msg.Attributes = attributes
 	ui.handlers.enqueue(msg)
 

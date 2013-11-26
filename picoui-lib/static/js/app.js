@@ -89,53 +89,33 @@ function poll() {
 					chevron = '<span class="chevron"></span>';
 				}
 
-				var itemHtml = "";
-				if (msg.attributes.toggle) {
-					var toggle = '<div class="toggle" id="' + msg.attributes.tid +
-								'"><div class="toggle-handle"></div></div>';
+				var itemHtml = '<a class="item" href="#" id="' + msg.attributes.eid + '">' + msg.attributes.txt + '</a>';
+				$('#' + msg.attributes.pid).append(itemHtml);
 
-					itemHtml = '<li id="' + msg.attributes.eid + '"><a>' + msg.attributes.txt + toggle + '</a></li>';
-					$('#' + msg.attributes.pid).append(itemHtml);
-
-					// Toggle event
-					if (msg.attributes.toggle) {
-						document.querySelector('#' + msg.attributes.tid)
-							.addEventListener('toggle', function(event) {
-								console.log("Toggled!!");
-                    			$.get('/toggle?eid=' + $(this).attr('id') +'&v=' + event["detail"]["isActive"]);
-                  			});
-                  	}
-				} else {
-					itemHtml = '<a class="item" href="#" id="' + msg.attributes.eid + '">' + msg.attributes.txt + '</a>';
-					console.log(itemHtml);
-					console.log(msg.attributes.pid);
-					$('#' + msg.attributes.pid).append(itemHtml);
-
-					// Click event
-					$('#' + msg.attributes.eid).click(function (o) {
-						$.get('/click?eid=' + $(this).attr('id'), {}, function (r) {});
-					});
-				}
+				// Click event
+				$('#' + msg.attributes.eid).click(function (o) {
+					$.get('/click?eid=' + $(this).attr('id'), {}, function (r) {});
+				});
 			} else if (msg.cmd === 'addtoggleitem') {
-				//var toggleHtml = '<label class="toggle" id="' + msg.attributes.tid + '"> <input type="checkbox"><div class="track"><div class="handle"></div></div></label>';
 				var toggleHtml = '<label class="toggle"> <input type="checkbox" id="' + msg.attributes.tid + '"><div class="track"><div class="handle"></div></div></label>';
 				var itemHtml = '<div class="item item-toggle" id="' + msg.attributes.eid + '">' +
 								msg.attributes.txt + toggleHtml + '</div>';
 
 				$('#' + msg.attributes.pid).append(itemHtml);
 
-				// Toggle event
-				// document.querySelector('#' + msg.attributes.tid)
-				// 	.addEventListener('toggle', function(event) {
-				// 		console.log("Toggled!!");
-    //                 	$.get('/toggle?eid=' + $(this).attr('id') +'&v=' + event["detail"]["isActive"]);
-    //               	});
+                $('#' + msg.attributes.tid).change(function () {
+                	var isChecked = $(this).is(':checked') ? true : false;
+                	$.get('/toggle?eid=' + $(this).attr('id') + '&v=' + isChecked, {}, function (r) {});
+                });
+			} else if (msg.cmd === 'addcheckboxitem') {
+				var toggleHtml = '<label class="checkbox"> <input type="checkbox" id="' + msg.attributes.tid + '"><div class="track"><div class="handle"></div></div></label>';
+				var itemHtml = '<div class="item item-checkbox" id="' + msg.attributes.eid + '">' +
+								msg.attributes.txt + toggleHtml + '</div>';
+
+				$('#' + msg.attributes.pid).append(itemHtml);
 
                 $('#' + msg.attributes.tid).change(function () {
-                	//console.log($(this).is(":checked"));
                 	var isChecked = $(this).is(':checked') ? true : false;
-                	//console.log(isChecked);
-
                 	$.get('/toggle?eid=' + $(this).attr('id') + '&v=' + isChecked, {}, function (r) {});
                 });
 			} else if (msg.cmd === 'addinput') {
