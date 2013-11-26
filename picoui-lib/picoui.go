@@ -25,6 +25,9 @@ type clickHandler func()
 // Function type for handling a toggle event.
 type toggleHandler func(value bool)
 
+// Function type for handling a slide event.
+type slideHandler func(value int)
+
 // NewMiUi creates a new PicoUi application and returns it.
 func NewPicoUi(timeout int) *PicoUi {
 	return &PicoUi{handlers: newHandleController(timeout)}

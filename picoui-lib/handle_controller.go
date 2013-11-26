@@ -36,6 +36,7 @@ func newHandleController(timeout int) *HandleController {
 	http.HandleFunc("/poll", HandleController.pollHandler)
 	http.HandleFunc("/click", HandleController.clickHandler)
 	http.HandleFunc("/toggle", HandleController.toggleHandler)
+	http.HandleFunc("/slide", HandleController.slideHandler)
 	http.HandleFunc("/state", HandleController.stateHandler)
 
 	return HandleController
@@ -117,6 +118,16 @@ func (hd *HandleController) toggleHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	hd.currentPageObj.handleToogle(eid, v)
+}
+
+func (hd *HandleController) slideHandler(w http.ResponseWriter, r *http.Request) {
+	vals := r.URL.Query()
+	eid := vals["eid"][0]
+	v, err := strconv.Atoi(vals["v"][0])
+	if err != nil {
+		return
+	}
+	hd.currentPageObj.handleSlide(eid, v)
 }
 
 // pageReload handles a page reload.

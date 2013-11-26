@@ -105,6 +105,12 @@ func inputPage() {
 	page.AddButton("Get Text", nil, "", buttonCallback)
 }
 
+func rangePage() {
+	page := ui.NewPage("Ranges", "Back", mainMenu)
+	title = page.AddTextbox("Range value:", "h2")
+	page.AddRange(0, 100, "ion-volume-low", "ion-volume-high", slideHandler)
+}
+
 // func imagesPage() {
 // 	page := ui.NewPage("Images", "Back", mainMenu)
 // 	page.AddImage("nature3.png")
@@ -132,6 +138,11 @@ func refrigeratorHandler(v bool) {
 	title.SetText("Toggled Refrigerator: " + fmt.Sprintf("%t", v))
 }
 
+func slideHandler(v int) {
+	fmt.Println("Slide handler called!")
+	title.SetText(fmt.Sprintf("Range value: %d", v))
+}
+
 func mainMenu() {
 	page := ui.NewPage("PicoUi", "", nil)
 	list := page.AddList()
@@ -140,6 +151,7 @@ func mainMenu() {
 	list.AddItem("Toggles", false, togglesPage)
 	list.AddItem("Checkboxes", false, checkboxesPage)
 	list.AddItem("Inputs", false, inputPage)
+	list.AddItem("Ranges", false, rangePage)
 	// list.AddItem("Images", false, false, imagesPage, nil)
 }
 

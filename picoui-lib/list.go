@@ -93,8 +93,8 @@ func (l *List) AddCheckbox(text string, onToggle toggleHandler) *ListItem {
 	return &item
 }
 
-func (l *List) AddSlider() {
-
+func (l *List) AddRange() {
+	// TODO
 }
 
 // NewListItem creates a new ListItem element.

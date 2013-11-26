@@ -114,10 +114,34 @@ function poll() {
 
 				$('#' + msg.attributes.pid).append(itemHtml);
 
+				// Change event
                 $('#' + msg.attributes.tid).change(function () {
                 	var isChecked = $(this).is(':checked') ? true : false;
                 	$.get('/toggle?eid=' + $(this).attr('id') + '&v=' + isChecked, {}, function (r) {});
                 });
+			} else if (msg.cmd === 'addrangeitem') {
+
+			} else if (msg.cmd === 'addrange') {
+				var itemHtml = '<div class="range" id="' + msg.attributes.eid + '">';
+				
+				if (msg.attributes.lefticon != "") {
+					itemHtml += '<i class="icon ' + msg.attributes.iconleft + '"></i>';
+				}
+
+				itemHtml += '<input type="range" min="' + msg.attributes.min + '" max="' + msg.attributes.max + '" id="' + msg.attributes.slideid + '">';
+
+				if (msg.attributes.righticon != "") {
+					itemHtml += '<i class="icon ' + msg.attributes.iconright + '"></i>';
+				}
+
+				itemHtml += "</div>";
+
+				$(itemHtml).insertBefore(BEFORE);
+
+				// Change event
+				$('#' + msg.attributes.slideid).change(function () {
+					$.get('/slide?eid=' + $(this).attr('id') + '&v=' + $(this).val(), {}, function (r) {});
+				});
 			} else if (msg.cmd === 'addinput') {
 				$('<input id="' + msg.attributes.eid + '" type="' + msg.attributes.type + '" placeholder="' + msg.attributes.placeholder + '">').insertBefore(BEFORE);
 			} else if (msg.cmd === 'getinput') {

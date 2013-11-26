@@ -1,6 +1,6 @@
 package picoui
 
-// Represents a UI button.
+// Represents a Button element.
 type Button struct {
 	ui             *PicoUi
 	id             string

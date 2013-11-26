@@ -2,30 +2,32 @@ package picoui
 
 // Represents a page element.
 type Page struct {
-	ui          *PicoUi
-	id          string
-	title       string
-	prevText    string
-	onPrevClick clickHandler
-	prevId      string
-	elements    []interface{}
-	clickables  map[string]clickHandler
-	toggables   map[string]toggleHandler
-	inputs      map[string]interface{}
+	ui            *PicoUi
+	id            string
+	title         string
+	prevText      string
+	onPrevClick   clickHandler
+	prevId        string
+	elements      []interface{}
+	clickables    map[string]clickHandler
+	toggables     map[string]toggleHandler
+	slideHandlers map[string]slideHandler
+	inputs        map[string]interface{}
 }
 
 // newPage creates a new Page and returns it.
 func newPage(ui *PicoUi, title string, prevText string, onPrevClick clickHandler) *Page {
 	id := "page_" + createId()
 	page := &Page{
-		ui:          ui,
-		id:          id,
-		title:       title,
-		prevText:    prevText,
-		onPrevClick: onPrevClick,
-		elements:    make([]interface{}, 10),
-		clickables:  make(map[string]clickHandler),
-		toggables:   make(map[string]toggleHandler)}
+		ui:            ui,
+		id:            id,
+		title:         title,
+		prevText:      prevText,
+		onPrevClick:   onPrevClick,
+		elements:      make([]interface{}, 10),
+		clickables:    make(map[string]clickHandler),
+		toggables:     make(map[string]toggleHandler),
+		slideHandlers: make(map[string]slideHandler)}
 	return page
 }
 
@@ -94,7 +96,19 @@ func (p *Page) AddList() *List {
 	return list
 }
 
-// HandleClick handles a click event.
+// AddRange creates a new Range and returns it.
+func (p *Page) AddRange(min int, max int, leftIcon string, rightIcon string, onSlide slideHandler) *Range {
+	item := newRange(p.ui, p, min, max, leftIcon, rightIcon, onSlide)
+	p.elements = append(p.elements, item)
+
+	if onSlide != nil {
+		p.slideHandlers[item.slideId] = onSlide
+	}
+
+	return item
+}
+
+// handleClick handles a click event.
 func (p *Page) handleClick(id string) {
 	if handler, ok := p.clickables[id]; ok {
 		if handler != nil {
@@ -103,9 +117,18 @@ func (p *Page) handleClick(id string) {
 	}
 }
 
-// HandleToogle handles a toggle event.
+// handleToogle handles a toggle event.
 func (p *Page) handleToogle(id string, v bool) {
 	if handler, ok := p.toggables[id]; ok {
+		if handler != nil {
+			handler(v)
+		}
+	}
+}
+
+// handleSlide handles a slide event.
+func (p *Page) handleSlide(id string, v int) {
+	if handler, ok := p.slideHandlers[id]; ok {
 		if handler != nil {
 			handler(v)
 		}
