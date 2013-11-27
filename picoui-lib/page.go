@@ -80,12 +80,6 @@ func (p *Page) AddElement(element string) *TextBox {
 	return ele
 }
 
-func (p *Page) AddInput(inputType string, placeholder string) *Input {
-	input := NewInput(p.ui, inputType, placeholder)
-	p.elements = append(p.elements, input)
-	return input
-}
-
 func (p *Page) AddImage() {
 	// TODO
 }

@@ -92,14 +92,16 @@ func checkboxesPage() {
 
 func inputPage() {
 	page := ui.NewPage("Inputs", "Back", mainMenu)
-	input1 := page.AddInput("text", "Input 1")
-	input2 := page.AddInput("text", "Input 2")
+	list := page.AddList()
+	list.AddDivider("Inputs")
+	input1 := list.AddInput("text", "Input 1")
+	input2 := list.AddInput("text", "Input 2")
 	page.AddElement("hr")
 	text := page.AddTextbox("Here goes the text from Input 1 + Input 2", "h3")
 	page.AddElement("hr")
 
 	buttonCallback := func() {
-		text.SetText(input1.GetText() + input2.GetText())
+		text.SetText(input1.GetText() + " " + input2.GetText())
 	}
 
 	page.AddButton("Get Text", nil, "", buttonCallback)
@@ -135,13 +137,6 @@ func listPage() {
 	list.AddItem("Beer", "ion-beer", "", nil)
 }
 
-// func imagesPage() {
-// 	page := ui.NewPage("Images", "Back", mainMenu)
-// 	page.AddImage("nature3.png")
-// 	page.AddElement("p")
-// 	page.AddImage("Beauty-of-nature.jpg")
-// }
-
 func onUp() {
 	title.SetText("Up!")
 }
@@ -176,7 +171,6 @@ func mainMenu() {
 	list.AddItem("Checkboxes", "", "", checkboxesPage)
 	list.AddItem("Inputs", "", "", inputPage)
 	list.AddItem("Ranges", "", "", rangePage)
-	// list.AddItem("Images", "", "", "", "", imagesPage, nil)
 }
 
 func main() {

@@ -21,6 +21,13 @@ type ListItem struct {
 	toggleId        string
 }
 
+// Represents an Input element.
+type Input struct {
+	ui       *PicoUi
+	id       string
+	parentId string
+}
+
 func NewList(ui *PicoUi, page *Page) *List {
 	id := "list_" + createId()
 	list := List{ui: ui, page: page, id: id}
@@ -55,6 +62,8 @@ func (l *List) AddToggle(text string, onToggle toggleHandler) *ListItem {
 		toggleId:        tg_id,
 		onToggleHandler: onToggle}
 
+	l.page.elements = append(l.page.elements, item)
+
 	if onToggle != nil {
 		l.page.toggables[tg_id] = onToggle
 	}
@@ -81,6 +90,8 @@ func (l *List) AddCheckbox(text string, onToggle toggleHandler) *ListItem {
 		toggleId:        tg_id,
 		onToggleHandler: onToggle}
 
+	l.page.elements = append(l.page.elements, item)
+
 	if onToggle != nil {
 		l.page.toggables[tg_id] = onToggle
 	}
@@ -105,6 +116,8 @@ func (l *List) AddRange(min int, max int, iconLeft string, iconRight string, onS
 	if onSlide != nil {
 		l.page.slideHandlers[slide_id] = onSlide
 	}
+
+	l.page.elements = append(l.page.elements, item)
 
 	msg := Message{Cmd: "addrangeitem"}
 	attributes := make(map[string]interface{})
@@ -132,6 +145,13 @@ func (l *List) AddDivider(text string) {
 	l.ui.handlers.enqueue(msg)
 }
 
+func (l *List) AddInput(inputType string, placeholder string) *Input {
+	item := newInput(l.ui, l.id, inputType, placeholder)
+	l.page.elements = append(l.page.elements, item)
+
+	return item
+}
+
 // NewListItem creates a new ListItem element and returns it.
 func newListItem(ui *PicoUi, parentId string, text string, leftIcon string, rightIcon string, onClick clickHandler) *ListItem {
 	id := "listitem_" + createId()
@@ -156,4 +176,29 @@ func newListItem(ui *PicoUi, parentId string, text string, leftIcon string, righ
 
 func (l *ListItem) SetText(text string) {
 	// TODO
+}
+
+// NewInput creates and returns a new MiUiInput.
+func newInput(ui *PicoUi, parentId string, inputType string, placeholder string) *Input {
+	id := "input_" + createId()
+	input := Input{ui: ui, id: id, parentId: parentId}
+
+	msg := Message{Cmd: "addinputitem"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = id
+	attributes["type"] = inputType
+	attributes["placeholder"] = placeholder
+	attributes["pid"] = parentId
+	msg.Attributes = attributes
+	ui.handlers.enqueue(msg)
+
+	return &input
+}
+
+func (i *Input) GetText() string {
+	msg := Message{Cmd: "getinput"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = i.id
+	msg.Attributes = attributes
+	return i.ui.handlers.enqueue_and_wait_for_result(msg)
 }

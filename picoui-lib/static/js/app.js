@@ -108,7 +108,8 @@ function poll() {
 					$.get('/click?eid=' + $(this).attr('id'), {}, function (r) {});
 				});
 			} else if (msg.cmd === 'addtoggleitem') {
-				var toggleHtml = '<label class="toggle"> <input type="checkbox" id="' + msg.attributes.tid + '"><div class="track"><div class="handle"></div></div></label>';
+				var toggleHtml = '<label class="toggle"> <input type="checkbox" id="' + msg.attributes.tid +
+									'"><div class="track"><div class="handle"></div></div></label>';
 				var itemHtml = '<div class="item item-toggle" id="' + msg.attributes.eid + '">' +
 								msg.attributes.txt + toggleHtml + '</div>';
 
@@ -119,7 +120,8 @@ function poll() {
                 	$.get('/toggle?eid=' + $(this).attr('id') + '&v=' + isChecked, {}, function (r) {});
                 });
 			} else if (msg.cmd === 'addcheckboxitem') {
-				var toggleHtml = '<label class="checkbox"> <input type="checkbox" id="' + msg.attributes.tid + '"><div class="track"><div class="handle"></div></div></label>';
+				var toggleHtml = '<label class="checkbox"> <input type="checkbox" id="' + msg.attributes.tid +
+									'"><div class="track"><div class="handle"></div></div></label>';
 				var itemHtml = '<div class="item item-checkbox" id="' + msg.attributes.eid + '">' +
 								msg.attributes.txt + toggleHtml + '</div>';
 
@@ -154,6 +156,11 @@ function poll() {
 			} else if (msg.cmd === 'adddivider') {
 				var itemHtml = '<div class="item item-divider" id="' + msg.attributes.id + '">' + msg.attributes.txt + '</div>';
 				$('#' + msg.attributes.pid).append(itemHtml);
+			} else if (msg.cmd === 'addinputitem') {
+				var itemHtml = '<div class="item item-input">' +
+					'<input id="' + msg.attributes.eid + '"" type="' + msg.attributes.type + '" placeholder="' + msg.attributes.placeholder + '">' +
+					'</div>';
+				$('#' + msg.attributes.pid).append(itemHtml);
 			} else if (msg.cmd === 'addrange') {
 				var itemHtml = '<div class="range" id="' + msg.attributes.eid + '">';
 				
@@ -175,8 +182,6 @@ function poll() {
 				$('#' + msg.attributes.slideid).change(function () {
 					$.get('/slide?eid=' + $(this).attr('id') + '&v=' + $(this).val(), {}, function (r) {});
 				});
-			} else if (msg.cmd === 'addinput') {
-				$('<input id="' + msg.attributes.eid + '" type="' + msg.attributes.type + '" placeholder="' + msg.attributes.placeholder + '">').insertBefore(BEFORE);
 			} else if (msg.cmd === 'getinput') {
 				$.get('/state?msg=' + $('#' + msg.attributes.eid).val(), {}, function (r) {});
 			}
