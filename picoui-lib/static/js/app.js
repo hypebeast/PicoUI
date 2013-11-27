@@ -84,12 +84,23 @@ function poll() {
 				// $('<ul class="list" id="' + msg.attributes.eid + '"></ul>').insertBefore(BEFORE);
 				$('<div class="list" id="' + msg.attributes.eid + '"></div>').insertBefore(BEFORE);
 			} else if (msg.cmd === 'addlistitem') {
-				var chevron = "";
-				if (msg.attributes.chevron) {
-					chevron = '<span class="chevron"></span>';
+				var leftIcon = "";
+				var rightIcon = "";
+
+				var itemHtml = '<a class="item';
+				
+				if (msg.attributes.lefticon) {
+					itemHtml += ' item-icon-left';
+					leftIcon = '<i class="icon ' + msg.attributes.lefticon + '"></i>';
 				}
 
-				var itemHtml = '<a class="item" href="#" id="' + msg.attributes.eid + '">' + msg.attributes.txt + '</a>';
+				if (msg.attributes.righticon) {
+					itemHtml += ' item-icon-right';
+					rightIcon = '<i class="icon ' + msg.attributes.righticon + '"></i>';
+				}
+
+				itemHtml += '" href="#" id="' + msg.attributes.eid + '">' + leftIcon + msg.attributes.txt + rightIcon + '</a>';
+				
 				$('#' + msg.attributes.pid).append(itemHtml);
 
 				// Click event
@@ -120,7 +131,29 @@ function poll() {
                 	$.get('/toggle?eid=' + $(this).attr('id') + '&v=' + isChecked, {}, function (r) {});
                 });
 			} else if (msg.cmd === 'addrangeitem') {
+				var itemHtml = '<div class="item range" id="' + msg.attributes.eid + '">';
+				
+				if (msg.attributes.lefticon != "") {
+					itemHtml += '<i class="icon ' + msg.attributes.iconleft + '"></i>';
+				}
 
+				itemHtml += '<input type="range" min="' + msg.attributes.min + '" max="' + msg.attributes.max + '" id="' + msg.attributes.slideid + '">';
+
+				if (msg.attributes.righticon != "") {
+					itemHtml += '<i class="icon ' + msg.attributes.iconright + '"></i>';
+				}
+
+				itemHtml += "</div>";
+
+				$('#' + msg.attributes.pid).append(itemHtml);
+
+				// Change event
+				$('#' + msg.attributes.slideid).change(function () {
+					$.get('/slide?eid=' + $(this).attr('id') + '&v=' + $(this).val(), {}, function (r) {});
+				});
+			} else if (msg.cmd === 'adddivider') {
+				var itemHtml = '<div class="item item-divider" id="' + msg.attributes.id + '">' + msg.attributes.txt + '</div>';
+				$('#' + msg.attributes.pid).append(itemHtml);
 			} else if (msg.cmd === 'addrange') {
 				var itemHtml = '<div class="range" id="' + msg.attributes.eid + '">';
 				

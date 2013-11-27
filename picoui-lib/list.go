@@ -1,5 +1,9 @@
 package picoui
 
+import (
+	"strconv"
+)
+
 // Represents a List element.
 type List struct {
 	ui   *PicoUi
@@ -31,8 +35,8 @@ func NewList(ui *PicoUi, page *Page) *List {
 }
 
 // AddItem adds a ListItem to the list.
-func (l *List) AddItem(text string, chevron bool, onClick clickHandler) *ListItem {
-	item := newListItem(l.ui, l.id, text, chevron, onClick)
+func (l *List) AddItem(text string, leftIcon string, rightIcon string, onClick clickHandler) *ListItem {
+	item := newListItem(l.ui, l.id, text, leftIcon, rightIcon, onClick)
 	l.page.elements = append(l.page.elements, item)
 	if onClick != nil {
 		l.page.clickables[item.id] = onClick
@@ -93,12 +97,43 @@ func (l *List) AddCheckbox(text string, onToggle toggleHandler) *ListItem {
 	return &item
 }
 
-func (l *List) AddRange() {
-	// TODO
+func (l *List) AddRange(min int, max int, iconLeft string, iconRight string, onSlide slideHandler) *Range {
+	id := "range_" + createId()
+	slide_id := "slide_" + createId()
+	item := Range{ui: l.ui, page: l.page, id: id, slideId: slide_id, onSlide: onSlide}
+
+	if onSlide != nil {
+		l.page.slideHandlers[slide_id] = onSlide
+	}
+
+	msg := Message{Cmd: "addrangeitem"}
+	attributes := make(map[string]interface{})
+	attributes["eid"] = id
+	attributes["pid"] = l.id
+	attributes["slideid"] = slide_id
+	attributes["min"] = strconv.Itoa(min)
+	attributes["max"] = strconv.Itoa(max)
+	attributes["iconleft"] = iconLeft
+	attributes["iconright"] = iconRight
+	msg.Attributes = attributes
+	l.ui.handlers.enqueue(msg)
+
+	return &item
 }
 
-// NewListItem creates a new ListItem element.
-func newListItem(ui *PicoUi, parentId string, text string, chevron bool, onClick clickHandler) *ListItem {
+func (l *List) AddDivider(text string) {
+	id := "divider_" + createId()
+	msg := Message{Cmd: "adddivider"}
+	attributes := make(map[string]interface{})
+	attributes["id"] = id
+	attributes["pid"] = l.id
+	attributes["txt"] = text
+	msg.Attributes = attributes
+	l.ui.handlers.enqueue(msg)
+}
+
+// NewListItem creates a new ListItem element and returns it.
+func newListItem(ui *PicoUi, parentId string, text string, leftIcon string, rightIcon string, onClick clickHandler) *ListItem {
 	id := "listitem_" + createId()
 	item := ListItem{
 		ui:             ui,
@@ -111,7 +146,8 @@ func newListItem(ui *PicoUi, parentId string, text string, chevron bool, onClick
 	attributes["eid"] = id
 	attributes["pid"] = parentId
 	attributes["txt"] = text
-	attributes["chevron"] = chevron
+	attributes["lefticon"] = leftIcon
+	attributes["righticon"] = rightIcon
 	msg.Attributes = attributes
 	ui.handlers.enqueue(msg)
 

@@ -109,6 +109,30 @@ func rangePage() {
 	page := ui.NewPage("Ranges", "Back", mainMenu)
 	title = page.AddTextbox("Range value:", "h2")
 	page.AddRange(0, 100, "ion-volume-low", "ion-volume-high", slideHandler)
+	list := page.AddList()
+	list.AddDivider("Ranges in a List")
+	list.AddRange(0, 100, "ion-ios7-sunny-outline", "ion-ios7-sunny", nil)
+	list.AddRange(0, 100, "ion-ios7-lightbulb-outline", "ion-ios7-lightbulb", nil)
+	list.AddRange(0, 100, "ion-ios7-bolt-outline", "ion-ios7-bolt", nil)
+	list.AddRange(0, 100, "ion-ios7-moon-outline", "ion-ios7-moon", nil)
+	list.AddRange(0, 100, "ion-ios7-partlysunny-outline", "ion-ios7-partlysunny", nil)
+	list.AddRange(0, 100, "ion-ios7-cloud-outline", "ion-ios7-cloud", nil)
+	list.AddRange(0, 100, "ion-ios7-rainy-outline", "ion-ios7-rainy", nil)
+	list.AddRange(0, 100, "ion-battery-empty", "ion-battery-full", nil)
+}
+
+func listPage() {
+	page := ui.NewPage("Lists", "Back", mainMenu)
+	list := page.AddList()
+	list.AddDivider("List Divider")
+	list.AddItem("Check Mail", "ion-email", "", nil)
+	list.AddItem("Call", "ion-ios7-telephone", "", nil)
+	list.AddDivider("Second Divider")
+	list.AddItem("Breaking Bad", "ion-beaker", "", nil)
+	list.AddItem("Pizza", "ion-pizza", "", nil)
+	list.AddItem("Music", "ion-music-note", "", nil)
+	list.AddItem("Games", "ion-game-controller-b", "", nil)
+	list.AddItem("Beer", "ion-beer", "", nil)
 }
 
 // func imagesPage() {
@@ -139,20 +163,20 @@ func refrigeratorHandler(v bool) {
 }
 
 func slideHandler(v int) {
-	fmt.Println("Slide handler called!")
 	title.SetText(fmt.Sprintf("Range value: %d", v))
 }
 
 func mainMenu() {
 	page := ui.NewPage("PicoUi", "", nil)
 	list := page.AddList()
-	list.AddItem("Static Content", false, staticPage)
-	list.AddItem("Buttons", false, buttonsPage)
-	list.AddItem("Toggles", false, togglesPage)
-	list.AddItem("Checkboxes", false, checkboxesPage)
-	list.AddItem("Inputs", false, inputPage)
-	list.AddItem("Ranges", false, rangePage)
-	// list.AddItem("Images", false, false, imagesPage, nil)
+	list.AddItem("Static Content", "", "", staticPage)
+	list.AddItem("Buttons", "", "", buttonsPage)
+	list.AddItem("Lists", "", "", listPage)
+	list.AddItem("Toggles", "", "", togglesPage)
+	list.AddItem("Checkboxes", "", "", checkboxesPage)
+	list.AddItem("Inputs", "", "", inputPage)
+	list.AddItem("Ranges", "", "", rangePage)
+	// list.AddItem("Images", "", "", "", "", imagesPage, nil)
 }
 
 func main() {
