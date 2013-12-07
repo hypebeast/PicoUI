@@ -6,7 +6,6 @@ type AppInfo struct {
 }
 
 type Config struct {
-	Apps       []AppInfo `json:"apps"`
-	AppsFolder string    `json:"appFolder"`
-	Port       int       `json:"port"`
+	AppsFolder string `json:"appFolder"`
+	Port       int    `json:"port"`
 }

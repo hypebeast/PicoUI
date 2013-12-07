@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MIUI</string>
+    <string name="app_name">PicoUI</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
     <string name="pref_host">Host</string>
-    <string name="pref_host_summ">Enter the IP address or the host name of you\'re app</string>
-    <string name="pref_host_def">miui.local</string>
+    <string name="pref_host_summ">Enter the IP address or the host name</string>
+    <string name="pref_host_def">picoui.local</string>
     <string name="pref_port">Port</string>
     <string name="pref_port_summ">Enter the Port</string>
-    <string name="pref_port_def">9999</string>
+    <string name="pref_port_def">80</string>
     <string name="action_refresh">Refresh</string>
+    <string name="status_header">STATUS</string>
+    <string name="uptime_header">UPTIME</string>
+    <string name="load_header">LOAD</string>
+    <string name="cpu_header">CPU</string>
+    <string name="mem_header">FREE MEMORY</string>
+    <string name="system_control_header">SYSTEM CONTROL</string>
+    <string name="button_reboot">REBOOT</string>
+    <string name="button_shutdown">SHUTDOWN</string>
+    
+    <!-- Nav Drawer Menu Items -->
+    <string-array name="nav_drawer_items">
+        <item >Home</item>
+        <item >Apps</item>
+        <item >App View</item>
+    </string-array>
 
 </resources>
