@@ -35,9 +35,12 @@ const (
 )
 
 var (
-	config      *Config
-	app_running bool = false
-	running_app *exec.Cmd
+	config         *Config
+	app_running    bool = false
+	running_app    *exec.Cmd
+	prevIdle       uint64
+	prevTotal      uint64
+	cpuUtilization uint64
 )
 
 func readProc(file string) string {
@@ -87,7 +90,7 @@ func findApps(folder string) []AppInfo {
 	return apps
 }
 
-func cpu() []uint64 {
+func getCpu() []uint64 {
 	output := readProc("stat")
 	reader := bufio.NewReader(bytes.NewBuffer([]byte(output)))
 	var cpuStats []uint64
@@ -111,6 +114,23 @@ func cpu() []uint64 {
 	}
 
 	return cpuStats
+}
+
+func calculateCpuUsage() {
+	stats := getCpu()
+
+	var total uint64 = 0
+	for _, value := range stats {
+		total += value
+	}
+
+	idle := stats[3]
+	diff_idle := idle - prevIdle
+	diff_total := total - prevTotal
+	cpuUtilization = (1000*(diff_total-diff_idle)/diff_total + 5) / 10
+
+	prevIdle = idle
+	prevTotal = total
 }
 
 func startAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -238,31 +258,12 @@ func statHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func cpuHandler(w http.ResponseWriter, r *http.Request) {
-	stats := cpu()
+	stats := getCpu()
 	fmt.Fprintf(w, "%d %d %d %d %d %d %d %d", stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7])
 }
 
 func cpuUtilHandler(w http.ResponseWriter, r *http.Request) {
-	s1 := cpu()
-	time.Sleep(100 * time.Millisecond)
-	s2 := cpu()
-
-	var total1 uint64 = 0
-	var total2 uint64 = 0
-	for i, _ := range s1 {
-		total1 += s1[i]
-		total2 += s2[i]
-	}
-
-	idle1 := s1[4]
-	idle2 := s2[4]
-	diff_idle := idle2 - idle1
-	diff_total := total2 - total1
-	diff_usage := (1000*(diff_total-diff_idle)/diff_total + 5) / 10
-
-	//loadavg := math.Float64frombits(((s2[0] + s2[1] + s2[2]) - (s1[0] + s1[1] + s1[2])) / ((s2[0] + s2[1] + s2[2] + s2[3]) - (s1[0] + s1[1] + s1[2] + s1[3])))
-	// fmt.Println(loadavg)
-	fmt.Fprintf(w, "%d", diff_usage)
+	fmt.Fprintf(w, "%d", cpuUtilization)
 }
 
 func main() {
@@ -300,8 +301,16 @@ func main() {
 	http.HandleFunc("/system/load", loadHandler)
 	http.HandleFunc("/system/stat", statHandler)
 	http.HandleFunc("/system/cpu", cpuHandler)
-	http.HandleFunc("/system/cpu_util", cpuUtilHandler)
+	http.HandleFunc("/system/cpu_usage", cpuUtilHandler)
 	http.HandleFunc("/ping", pingHandler)
+
+	// Start the CPU usage calculation
+	ticker := time.NewTicker(time.Millisecond * 1000)
+	go func() {
+		for _ = range ticker.C {
+			calculateCpuUsage()
+		}
+	}()
 
 	// Start server and listen for incoming requests
 	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", config.Port), nil)
