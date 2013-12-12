@@ -51,18 +51,15 @@ func readProc(file string) string {
 	return string(contents[:])
 }
 
-func executeCmd(command string, args string) string {
+func executeCmd(command string, args ...string) string {
 	var out []byte
 	var err error
 
-	if args != "" {
-		out, err = exec.Command(command, args).Output()
-	} else {
-		out, err = exec.Command(command).Output()
-	}
+	out, err = exec.Command(command, args...).Output()
 	if err != nil {
 		return fmt.Sprintf("error: %s", err.Error())
 	}
+
 	return string(out[:])
 }
 
