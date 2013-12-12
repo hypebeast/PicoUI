@@ -1,0 +1,16 @@
+package main
+
+import (
+	"github.com/hypebeast/picoui/picoui-lib"
+)
+
+var (
+	ui    *picoui.PicoUi
+)
+
+func main() {
+	ui = picoui.NewPicoUi(1000)
+	page := ui.NewPage("{{.Name}}", "", nil)
+	page.AddTextbox("Hello, {{.Name}}", "h2")
+	ui.Run()
+}
