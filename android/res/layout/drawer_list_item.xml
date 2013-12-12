@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="65dp"
+    android:orientation="vertical"
+    android:background="@drawable/list_selector" >
+    
+    <TextView
+        android:id="@+id/drawer_title"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:textColor="@color/drawer_text_color"
+        android:textSize="@dimen/drawer_text_size"
+        android:fontFamily="sans-serif-thin"
+        android:gravity="center_vertical"
+        android:paddingLeft="15dp"/>
+    
+</LinearLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="text_color">#FFFFFF</color>
+    <color name="drawer_background">#E9E9E9</color>
+    <color name="drawer_list_background_color">#E9E9E9</color>
+    <color name="drawer_list_background_pressed_color">#A6ACA9</color>
+    <color name="drawer_text_color">#323232</color>
+    <color name="drawer_list_divider_color">#323232</color>
+    <color name="applist_text_color">#323232</color>
+    <color name="actionbar_background_color">#d35400</color>
+    <color name="home_background_color">#34495e</color>
+    
+</resources>
