@@ -4,3 +4,4 @@ picoui-chief/picoui-chief
 example/example
 *.sublime-*
 android/bin/*
+picoui/picoui
