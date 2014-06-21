@@ -23,10 +23,12 @@ import (
 // Command defines a command for PicoUi. The structure was copied from the
 // 'go' command and the 'revel' project.
 type Command struct {
-	UsageLine string
-	Short     string
-	Long      string
-	Run       func(args []string)
+	Run         func(cmd *Command, args []string)
+	UsageLine   string
+	Short       string
+	Long        string
+	Flag        flag.FlagSet // Flag is a set of flags specific to this command
+	CustomFlags bool         // CustomFlags indicates that the command will do its own flag parsing
 }
 
 // Name returns the command name. The name is the first word in the usage line.
@@ -39,6 +41,7 @@ func (cmd *Command) Name() string {
 	return name
 }
 
+// Usage returns the usage line of the command.
 func (cmd *Command) Usage() {
 	fmt.Fprintf(os.Stderr, "usage: %s\n\n", cmd.UsageLine)
 	fmt.Fprintf(os.Stderr, "%s\n", strings.TrimSpace(cmd.Long))
@@ -50,11 +53,12 @@ var commands = []*Command{
 	cmdNew,
 	cmdRun,
 	cmdPublish,
+	cmdBuild,
 }
 
 func main() {
 	fmt.Fprintf(os.Stdout, header)
-	flag.Usage = func() { usage(1) }
+	flag.Usage = func() { usage(2) }
 	flag.Parse()
 	args := flag.Args()
 
@@ -70,7 +74,7 @@ func main() {
 	}
 
 	// Commands use panic to abort execution when something goes wrong.
-	// Panics are logged at the point of error.  Ignore those.
+	// Panics are logged at the point of error. Ignore those.
 	defer func() {
 		if err := recover(); err != nil {
 			if _, ok := err.(LoggedError); !ok {
@@ -84,8 +88,15 @@ func main() {
 	arg := args[0]
 
 	for _, cmd := range commands {
-		if cmd.Name() == arg {
-			cmd.Run(args[1:])
+		if cmd.Name() == arg && cmd.Run != nil {
+			cmd.Flag.Usage = func() { cmd.Usage() }
+			if cmd.CustomFlags {
+				args = args[1:]
+			} else {
+				cmd.Flag.Parse(args[1:])
+				args = cmd.Flag.Args()
+			}
+			cmd.Run(cmd, args)
 			return
 		}
 	}
@@ -94,7 +105,7 @@ func main() {
 }
 
 const header = `#
-# picoui http://github.com/hypebeast/picoui
+# picoui --> http://github.com/hypebeast/picoui
 #
 `
 
@@ -127,10 +138,9 @@ func usage(exitCode int) {
 
 // help prints the usage text for a command.
 func help(args []string) {
-	// print the usage text if no command is specified
-	if len(args) == 0 {
+	// print the usage text and exit if no command is specified
+	if len(args) < 1 {
 		usage(2)
-		return
 	}
 
 	if len(args) != 1 {
@@ -150,7 +160,7 @@ func help(args []string) {
 	errorf("unknown command %q\nRun 'revel help' for usage.\n", args[0])
 }
 
-// tmpl renders a template.
+// tmpl renders a template with the given writer, template and the data.
 func tmpl(w io.Writer, text string, data interface{}) {
 	t := template.New("top")
 	template.Must(t.Parse(text))

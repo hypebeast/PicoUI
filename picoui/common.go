@@ -13,6 +13,7 @@ import (
 // Use a wrapper to differentiate logged panics from unexpected ones.
 type LoggedError struct{ error }
 
+// Contains some information about a PicoUI application.
 type AppInfo struct {
 	Name string
 }
@@ -45,10 +46,12 @@ func copyFile(destFilename string, srcFilename string) {
 	panicOnError(err, "Failed to close: "+srcFilename)
 }
 
-// copyDir copies a directory tree over to a new directory. Every file that ends
-// with .template will be
+// copyDir copies a directory tree over to a new directory. The source
+// directory srcDir will be copied over to the destination directory destDir.
+// Every file that ends with .template will be rendered with the given data.
 func copyDir(destDir string, srcDir string, data interface{}) error {
 	return filepath.Walk(srcDir, func(srcPath string, info os.FileInfo, err error) error {
+		// Get the relative path
 		relSrcPath := strings.TrimLeft(srcPath[len(srcDir):], string(os.PathSeparator))
 		destPath := filepath.Join(destDir, relSrcPath)
 
@@ -81,6 +84,8 @@ func copyDir(destDir string, srcDir string, data interface{}) error {
 	})
 }
 
+// renderTemplate renders a template with the path srcPath to the destination
+// destPath with the given data.
 func renderTemplate(destPath string, srcPath string, data interface{}) {
 	tmpl, err := template.ParseFiles(srcPath)
 	panicOnError(err, "Failed to parse template: "+srcPath)
@@ -123,4 +128,12 @@ func isPathInGopath(path string) bool {
 		}
 	}
 	return isingopath
+}
+
+func errorIfGopathIsNotSet() {
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		errorf("Abort: GOPATH environment variable is not set.\n" +
+			"Please refer to http://golang.org/doc/code.html to configure your Go environment.")
+	}
 }

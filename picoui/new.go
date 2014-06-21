@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 var cmdNew = &Command{
@@ -14,7 +13,7 @@ var cmdNew = &Command{
 	Long: `
 New creates a new PicoUi application with all required files.
 
-It puts all of the files in a folder named [appname] in the current directory. 
+It puts all of the files in a folder named [appname] in the current directory.
 
 The [appname] folder has the following contents:
 
@@ -29,20 +28,19 @@ For example:
 
 	picoui new helloworld
 `,
-	Run: newApp,
 }
 
-func newApp(args []string) {
+func init() {
+	cmdNew.Run = newApp
+}
+
+func newApp(cmd *Command, args []string) {
 	if len(args) == 0 {
 		errorf("No app name given.\nRun 'picoui help new' for usage.\n")
 	}
 
 	curpath, _ := os.Getwd()
-	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		errorf("Abort: GOPATH environment variable is not set.\n" +
-			"Please refer to http://golang.org/doc/code.html to configure your Go environment.")
-	}
+	errorIfGopathIsNotSet()
 
 	appName := args[0]
 
@@ -51,28 +49,18 @@ func newApp(args []string) {
 		errorf("Abort: '%s' looks like an absolute path. Please provide an application name instead.", appName)
 	}
 
-	isingopath := false
-	appsrcpath := ""
+	gopath := os.Getenv("GOPATH")
 
-	// Check if the current path is inside of $GOPATH
-	splitedgopath := filepath.SplitList(gopath)
-	for _, sp := range splitedgopath {
-		sp, _ = filepath.EvalSymlinks(filepath.Join(sp, "src"))
-
-		if strings.HasPrefix(strings.ToLower(curpath), strings.ToLower(sp)) {
-			isingopath = true
-			appsrcpath = sp
-			break
-		}
-	}
-
-	if !isingopath {
+	// Check if current path is in GOPATH
+	if !isPathInGopath(curpath) {
 		errorf("Abort: Unable to create an application outside of GOPATH '%s'\n"+
 			"Change your work directory by 'cd %s%ssrc'\n", gopath, gopath, filepath.Separator)
 	}
 
+	gosrcpath := path.Join(gopath, "src")
+
 	// Check if the picoui-lib source can be found
-	srcpath := filepath.Join(appsrcpath, PICOUI_IMPORT_PATH)
+	srcpath := filepath.Join(gosrcpath, PICOUI_IMPORT_PATH)
 	if _, err := os.Stat(srcpath); os.IsNotExist(err) {
 		errorf("Abort: Could not find PicoUi source code: %s\n", err)
 	}
@@ -94,5 +82,5 @@ func newApp(args []string) {
 	fmt.Fprintf(os.Stdout, "Your application is ready:\n")
 	fmt.Fprintf(os.Stdout, "\t%s\n\n", appPath)
 	fmt.Fprintf(os.Stdout, "You can run it with:\n")
-	fmt.Fprintf(os.Stdout, "\tpicoui run %s\n", appName)
+	fmt.Fprintf(os.Stdout, "\tcd %s\n\tpicoui run\n", appName)
 }

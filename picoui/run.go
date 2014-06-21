@@ -17,14 +17,17 @@ var cmdRun = &Command{
 Run the PicoUi application. To run the application you must be in the directory
 where the application resides.
 
-For example:
+Example:
 
 	picoui run
 `,
-	Run: runApp,
 }
 
-func runApp(args []string) {
+func init() {
+	cmdRun.Run = runApp
+}
+
+func runApp(cmd *Command, args []string) {
 	if len(args) != 0 {
 		errorf("Abort: Do many arguments given.\nRun 'picoui help run' for more information.")
 	}
@@ -82,6 +85,5 @@ func runApp(args []string) {
 	}()
 
 	app.Wait()
-
 	fmt.Fprintf(os.Stdout, "'%s' stopped\n", appname)
 }
