@@ -6,7 +6,7 @@ package main
  * Part of the PicoUi project.
  *
  * The Picoui-chief monitores and controls PicoUi applications. Moreover, it
- * provides system information about the Raspberry Pi (or any other linux
+ * provides some basic system information about the Raspberry Pi (or any other linux
  * system) on which it is running.
  *
  * Created: 2013.11.21
