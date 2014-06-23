@@ -81,6 +81,6 @@ func newApp(cmd *Command, args []string) {
 
 	fmt.Fprintf(os.Stdout, "Your application is ready:\n")
 	fmt.Fprintf(os.Stdout, "\t%s\n\n", appPath)
-	fmt.Fprintf(os.Stdout, "You can run it with:\n")
+	fmt.Fprintf(os.Stdout, "You can start it with:\n")
 	fmt.Fprintf(os.Stdout, "\tcd %s\n\tpicoui run\n", appName)
 }

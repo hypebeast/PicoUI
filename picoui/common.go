@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -115,6 +116,15 @@ func Debugf(format string, a ...interface{}) {
 	}
 }
 
+func errorf(format string, args ...interface{}) {
+	// Ensure the user's command prompt starts on the next line
+	if !strings.HasSuffix(format, "\n") {
+		format += "\n"
+	}
+	fmt.Fprintf(os.Stderr, format, args...)
+	panic(LoggedError{})
+}
+
 func isPathInGopath(path string) bool {
 	gopath := os.Getenv("GOPATH")
 	isingopath := false
@@ -135,5 +145,14 @@ func errorIfGopathIsNotSet() {
 	if gopath == "" {
 		errorf("Abort: GOPATH environment variable is not set.\n" +
 			"Please refer to http://golang.org/doc/code.html to configure your Go environment.")
+	}
+}
+
+func runCommand(dir string, command string, arg ...string) {
+	app := exec.Command(command, arg...)
+	app.Dir = dir
+	err := app.Run()
+	if err != nil {
+		errorf("Abort: %s", err)
 	}
 }

@@ -49,7 +49,7 @@ func runApp(cmd *Command, args []string) {
 	}
 
 	appname := path.Base(curpath)
-	fmt.Fprintf(os.Stdout, "Uses '%s' as appname\n", appname)
+	Debugf("Use '%s' as app name", appname)
 
 	// Find all go files and check if at least one go file is found
 	var gofiles []string

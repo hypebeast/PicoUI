@@ -52,8 +52,8 @@ func (cmd *Command) Usage() {
 var commands = []*Command{
 	cmdNew,
 	cmdRun,
-	cmdPublish,
 	cmdBuild,
+	cmdPublish,
 }
 
 func main() {
@@ -121,15 +121,6 @@ Use "picoui help [command]" for more information.
 var helpTemplate = `usage: picoui {{.UsageLine}}
 {{.Long}}`
 
-func errorf(format string, args ...interface{}) {
-	// Ensure the user's command prompt starts on the next line
-	if !strings.HasSuffix(format, "\n") {
-		format += "\n"
-	}
-	fmt.Fprintf(os.Stderr, format, args...)
-	panic(LoggedError{})
-}
-
 // usage prints the usage text.
 func usage(exitCode int) {
 	tmpl(os.Stderr, usageTemplate, commands)
@@ -160,7 +151,7 @@ func help(args []string) {
 	errorf("unknown command %q\nRun 'revel help' for usage.\n", args[0])
 }
 
-// tmpl renders a template with the given writer, template and the data.
+// tmpl renders a template with the given writer, template text and the data.
 func tmpl(w io.Writer, text string, data interface{}) {
 	t := template.New("top")
 	template.Must(t.Parse(text))

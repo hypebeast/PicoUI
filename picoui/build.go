@@ -32,7 +32,6 @@ var buildForPi bool // -p flag
 
 func runBuild(cmd *Command, args []string) {
 	curpath, _ := os.Getwd()
-
 	Debugf("current path: %s", curpath)
 
 	// Check if GOPATH is set
@@ -44,7 +43,6 @@ func runBuild(cmd *Command, args []string) {
 	}
 
 	appname := path.Base(curpath)
-
 	Debugf("app name: %s", appname)
 
 	fmt.Fprintf(os.Stdout, "Building application '%s'...\n", appname)
