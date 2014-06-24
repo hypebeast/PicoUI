@@ -17,6 +17,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -36,7 +37,9 @@ const (
 
 var (
 	config         *Config
+	configFileName string
 	app_running    bool = false
+	app_info       AppInfo
 	running_app    *exec.Cmd
 	prevIdle       uint64
 	prevTotal      uint64
@@ -52,10 +55,7 @@ func readProc(file string) string {
 }
 
 func executeCmd(command string, args ...string) string {
-	var out []byte
-	var err error
-
-	out, err = exec.Command(command, args...).Output()
+	out, err := exec.Command(command, args...).Output()
 	if err != nil {
 		return fmt.Sprintf("error: %s", err.Error())
 	}
@@ -85,6 +85,45 @@ func findApps(folder string) []AppInfo {
 	}
 
 	return apps
+}
+
+func startApplication(appName string) error {
+	if len(appName) < 1 {
+		return errors.New("no app name")
+	}
+
+	if app_running {
+		running_app.Process.Kill()
+	}
+
+	// Check if a app with the given name exists
+	apps := findApps(config.AppsFolder)
+	var foundApp AppInfo
+	found := false
+	for _, app := range apps {
+		if app.Name == appName {
+			foundApp = app
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return errors.New("app not found")
+	}
+
+	running_app = exec.Command(path.Join(foundApp.Path, foundApp.Name))
+	running_app.Dir = foundApp.Path
+	err := running_app.Start()
+	if err != nil {
+		return errors.New("can't start app")
+	}
+
+	app_running = true
+	app_info.Name = foundApp.Name
+	app_info.Path = foundApp.Path
+
+	return nil
 }
 
 func getCpu() []uint64 {
@@ -131,41 +170,31 @@ func calculateCpuUsage() {
 }
 
 func startAppHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprintf(w, "%s", "error: method not supported")
+		return
+	}
+
 	vals := r.URL.Query()
 	appName := vals["name"][0]
 
-	if app_running {
-		running_app.Process.Kill()
+	// Check for autostart parameter
+	if len(vals["autostart"]) > 0 {
+		// Set the autostart value for this app
+		config.Autostart = appName
+		saveConfig(config, configFileName)
 	}
 
-	// Check if a app with the given name exists
-	apps := findApps(config.AppsFolder)
-	var foundApp AppInfo
-	found := false
-	for _, app := range apps {
-		if app.Name == appName {
-			foundApp = app
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		fmt.Fprintf(w, "%s", "error: app not found")
-		return
-	}
-
-	running_app = exec.Command(path.Join(foundApp.Path, foundApp.Name))
-	running_app.Dir = foundApp.Path
-	err := running_app.Start()
+	err := startApplication(appName)
 	if err != nil {
-		fmt.Fprintf(w, "%s", "error: can't start app")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%s", "error starting app")
 		return
 	}
 
-	app_running = true
-
-	fmt.Fprintf(w, "%s:%s", "ok starting app: ", foundApp.Name)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s: %s", "ok starting app", appName)
 }
 
 func killAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -180,12 +209,72 @@ func killAppHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "error: no running app found")
 }
 
+func autostartHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprintf(w, "%s", "error: method not supported")
+		return
+	}
+
+	vals := r.URL.Query()
+
+	if len(vals["appname"]) < 1 {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%s", "error")
+		return
+	}
+
+	config.Autostart = vals["appname"][0]
+	saveConfig(config, configFileName)
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", "ok")
+}
+
+func deleteAutostartHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprintf(w, "%s", "error: method not supported")
+		return
+	}
+
+	config.Autostart = ""
+	saveConfig(config, configFileName)
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", "ok")
+}
+
 func listAppsHandler(w http.ResponseWriter, r *http.Request) {
 	apps := findApps(config.AppsFolder)
 	enc := json.NewEncoder(w)
 	err := enc.Encode(&apps)
 	if err != nil {
 		fmt.Println("encoding error", err)
+	}
+}
+
+func appStatusHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		return
+	}
+
+	enc := json.NewEncoder(w)
+	if app_running {
+		var info map[string]interface{}
+		info["status"] = "running"
+		info["info"] = app_info
+		err := enc.Encode(&info)
+		if err != nil {
+			fmt.Println("encoding error", err)
+		}
+	} else {
+		var info map[string]interface{}
+		info["status"] = "stopped"
+		err := enc.Encode(&info)
+		if err != nil {
+			fmt.Println("encoding error", err)
+		}
 	}
 }
 
@@ -272,19 +361,23 @@ func main() {
 	if *version {
 		fmt.Printf("picoui-chief v%s\n", VERSION)
 		fmt.Println("picoui-chief is part of the PicoUi project")
-		fmt.Println("2013, Sebastian Ruml <sebastian.ruml@gmail.com>")
+		fmt.Println("2013-2014, Sebastian Ruml <sebastian.ruml@gmail.com>")
 		os.Exit(0)
 	}
 
 	// Load the configuration
-	config = loadConfig(*configFile)
+	configFileName = *configFile
+	config = loadConfig(configFileName)
 
 	fmt.Printf("Starting picoui-chief v%s\n", VERSION)
 
 	// Set up all handlers
 	http.HandleFunc("/apps", listAppsHandler)
+	http.HandleFunc("/apps/status", appStatusHandler)
 	http.HandleFunc("/apps/start", startAppHandler)
 	http.HandleFunc("/apps/kill", killAppHandler)
+	http.HandleFunc("/apps/autostart", autostartHandler)
+	http.HandleFunc("/apps/deleteAutostart", deleteAutostartHandler)
 	http.HandleFunc("/system/uptime", uptimeHandler)
 	http.HandleFunc("/system/proc_uptime", procUptimeHandler)
 	http.HandleFunc("/system/ifconfig", ifconfigHandler)
@@ -308,6 +401,10 @@ func main() {
 			calculateCpuUsage()
 		}
 	}()
+
+	if len(config.Autostart) > 0 {
+		startApplication(config.Autostart)
+	}
 
 	// Start server and listen for incoming requests
 	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", config.Port), nil)
@@ -334,4 +431,21 @@ func loadConfig(filename string) (c *Config) {
 	}
 
 	return config
+}
+
+func saveConfig(c *Config, filename string) error {
+	if filename == "" {
+		return errors.New("You should specify a filename to save the config")
+	}
+
+	data, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filename, data, 0755)
+	if err != nil {
+		return err
+	}
+	return nil
 }

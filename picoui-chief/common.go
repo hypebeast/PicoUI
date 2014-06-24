@@ -8,4 +8,5 @@ type AppInfo struct {
 type Config struct {
 	AppsFolder string `json:"appFolder"`
 	Port       int    `json:"port"`
+	Autostart  string `json:"autostart"`
 }
