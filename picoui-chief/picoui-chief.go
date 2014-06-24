@@ -209,7 +209,7 @@ func killAppHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "error: no running app found")
 }
 
-func autostartHandler(w http.ResponseWriter, r *http.Request) {
+func setAutostartHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintf(w, "%s", "error: method not supported")
@@ -231,7 +231,7 @@ func autostartHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", "ok")
 }
 
-func deleteAutostartHandler(w http.ResponseWriter, r *http.Request) {
+func disableAutostartHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintf(w, "%s", "error: method not supported")
@@ -376,8 +376,8 @@ func main() {
 	http.HandleFunc("/apps/status", appStatusHandler)
 	http.HandleFunc("/apps/start", startAppHandler)
 	http.HandleFunc("/apps/kill", killAppHandler)
-	http.HandleFunc("/apps/autostart", autostartHandler)
-	http.HandleFunc("/apps/deleteAutostart", deleteAutostartHandler)
+	http.HandleFunc("/apps/setAutostart", setAutostartHandler)
+	http.HandleFunc("/apps/disableAutostart", disableAutostartHandler)
 	http.HandleFunc("/system/uptime", uptimeHandler)
 	http.HandleFunc("/system/proc_uptime", procUptimeHandler)
 	http.HandleFunc("/system/ifconfig", ifconfigHandler)
