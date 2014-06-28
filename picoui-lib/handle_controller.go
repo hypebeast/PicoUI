@@ -30,7 +30,7 @@ type Message struct {
 func newHandleController(timeout int) *HandleController {
 	HandleController := &HandleController{timeout: timeout, currentPage: "/", currentPageTitle: ""}
 
-	// Add all HandleController
+	// Add all handler functions
 	http.HandleFunc("/ping", HandleController.pingHandler)
 	http.HandleFunc("/init", HandleController.initHandler)
 	http.HandleFunc("/poll", HandleController.pollHandler)
